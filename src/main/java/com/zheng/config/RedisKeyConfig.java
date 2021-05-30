@@ -59,4 +59,9 @@ public class RedisKeyConfig {
      */
     public static final String SKILL_ORDER = "skill_order";
 
+    /**
+     * 记录令牌桶的令牌信息   采用list 存储令牌， 永久有效
+     */
+    public static final String LIMIT_BUCKET = "skill_limit";
+
 }
