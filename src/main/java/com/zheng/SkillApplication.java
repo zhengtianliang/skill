@@ -3,6 +3,7 @@ package com.zheng;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author: ZhengTianLiang
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan(value = "com.zheng.dao")
+@EnableScheduling   // 开启定时任务的注解
 public class SkillApplication {
 
     public static void main(String[] args) {

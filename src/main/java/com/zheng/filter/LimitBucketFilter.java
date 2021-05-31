@@ -48,7 +48,7 @@ public class LimitBucketFilter implements Filter {
         if (request.getQueryString().endsWith("/api/order/skillsave.do")){
             // 进行限流
             // 能取到令牌，则说明有，可以继续执行，令牌一旦取出，就要删除
-            Integer i = Integer.valueOf(redisTemplate.opsForList().leftPop(RedisKeyConfig.LIMIT_BUCKET));
+            Long i = Long.valueOf(redisTemplate.opsForList().leftPop(RedisKeyConfig.LIMIT_BUCKET));
             if (i != null){ // 能取到token，放行
                 filterChain.doFilter(request,servletResponse);
             }else { // 取不到，就拦截住
