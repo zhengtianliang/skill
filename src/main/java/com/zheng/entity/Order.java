@@ -22,7 +22,7 @@ public class Order {
     /**
      * 订单id
      */
-    private Integer oid;
+    private Long oid;
 
     /**
      * 秒杀商品id

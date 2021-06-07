@@ -25,4 +25,18 @@ public interface OrderDao {
      */
     Integer insertOrder(Order order);
 
+    /**
+     * @author: ZhengTianLiang
+     * @date: 2021/6/7  21:55
+     * @desc: 根据订单id查询订单详情(主要是看订单的状态)
+     */
+    Order selectById(long oid);
+
+    /**
+     * @author: ZhengTianLiang
+     * @date: 2021/6/7  21:56
+     * @desc: 更新订单状态
+     */
+    int update(@Param("oid")long id,@Param("status")int status);
+
 }

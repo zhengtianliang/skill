@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
                 } else {
                     int r = 0;
                     // 8、密码错误  5分钟内，密码错误3次以上，冻结30分钟
-                    Set keys = redisTemplate.keys(RedisKeyConfig.USER_PASSFAIL + loginDTO.getPhone());
+                    Set keys = redisTemplate.keys(RedisKeyConfig.USER_PASSFAIL + loginDTO.getPhone() + "_*");
                     if (keys != null && keys.size() > 1) {
                         r = keys.size();
                         // 需要冻结，之前错误至少两次(size>1)，加上这次，错误三次了，
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
                                 RedisKeyConfig.USER_FREEZE_TIME, TimeUnit.MINUTES);
                     }
                     // 9、记录本次的失败
-                    redisTemplate.opsForValue().set(RedisKeyConfig.USER_FREEZE + loginDTO.getPhone()
+                    redisTemplate.opsForValue().set(RedisKeyConfig.USER_PASSFAIL + loginDTO.getPhone()
                             + ":" + System.currentTimeMillis(), "", RedisKeyConfig.TOKEN_FILE, TimeUnit.MINUTES);
                     r += 1;
                     return R.fail("亲，您已经失败了" + r + "次，小心封号哦");
@@ -107,12 +107,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public R checkToken(String token) {
-        if (redisTemplate.hasKey(RedisKeyConfig.TOKEN_SWAP+token)){
+        if (redisTemplate.hasKey(RedisKeyConfig.TOKEN_SWAP + token)) {
             return R.fail("亲，你的账号已经在其他设备上登陆了");
-        }else {
-            if (redisTemplate.hasKey(RedisKeyConfig.TOKEN_USER+token)){
+        } else {
+            if (redisTemplate.hasKey(RedisKeyConfig.TOKEN_USER + token)) {
                 return R.ok();
-            }else {
+            } else {
                 return R.fail("亲，登陆信息已失效，请重新登陆");
             }
         }

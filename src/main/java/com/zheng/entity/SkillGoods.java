@@ -44,4 +44,9 @@ public class SkillGoods {
     @ApiModelProperty(value = "秒杀商品的库存量")
     private Integer seckillStock;
 
+    /**
+     * 价格
+     */
+    private Double price;
+
 }

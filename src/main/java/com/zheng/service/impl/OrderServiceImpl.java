@@ -9,13 +9,18 @@ import com.zheng.entity.Order;
 import com.zheng.entity.SkillGoods;
 import com.zheng.exception.OrderException;
 import com.zheng.service.OrderService;
+import com.zheng.util.IdGenerator;
 import com.zheng.vo.R;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -36,6 +41,11 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    private IdGenerator idGenerator = new IdGenerator();
+
     @Value("${skill.maxcount}")
     private Integer skillMaxCount;
 
@@ -43,6 +53,10 @@ public class OrderServiceImpl implements OrderService {
      * 辅助redis实现预减库存，记录已售罄的商品       泛型是 商品id，是否售罄
      */
     private ConcurrentHashMap<Integer, Boolean> map = new ConcurrentHashMap<>();
+
+    public  ConcurrentHashMap<Integer, Boolean> getMap(){
+        return map;
+    }
 
     /**
      * @author: ZhengTianLiang
@@ -138,7 +152,7 @@ public class OrderServiceImpl implements OrderService {
                                 skillGoodsDTO.getGid() + "_" + uid)) {
                             // 5、生成订单
                             Order addOrder = new Order();
-                            addOrder.setOid((int) System.currentTimeMillis() / 1000);
+                            addOrder.setOid(idGenerator.nextId());
                             addOrder.setStatus(1);
                             addOrder.setSgid(skillGoodsDTO.getGid());
                             addOrder.setUid(uid);
@@ -147,7 +161,10 @@ public class OrderServiceImpl implements OrderService {
                                     skillGoodsDTO.getGid() + "_" + uid, JSON.toJSONString(addOrder));
 
                             // 新增mysql中的订单数据，消息机制，异步操作 mysql中订单生效(用到了rabbitmq，上面只是创建了订单对象，但是新增到了redis中，没存入mysql中)
-
+                            Map orderMap = new HashMap();
+                            orderMap.put("order",addOrder);
+                            orderMap.put("count",skillGoodsDTO.getCount());
+                            rabbitTemplate.convertAndSend("skill.exchange.order",orderMap);
                             // 在redis中进行商品库存的预减
                             stringRedisTemplate.opsForHash().put(RedisKeyConfig.SKILL_GOODS, skillGoodsDTO.getGid(),
                                     redisCount - skillGoodsDTO.getCount());
